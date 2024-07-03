@@ -4,8 +4,11 @@
 		Automatically delete items specified in the list.
 		Will only trigger outside of combat
 
-		By null
+		Original addon by null
 		https://github.com/nullfoxh/SimpleAutoDelete-TBC
+    
+    Modified for vanilla (1.12.1) by fondlez
+    https://github.com/fondlez/SimpleAutoDelete
 
 ]]--
 
@@ -39,12 +42,46 @@ local function getTableSize(t)
 	return count
 end
 
+-- Utility function to lowercase compare strings for equality
+local function leq(a, b)
+  return strlower(a) == strlower(b)
+end
+
+-- Utility function to parse components of an item string
+local function parseItemString(target)
+  local found, _, item_id, enchant_id, suffix_id, unique_id = strfind(target,
+    "item:(%d+):(%d*):(%d*):(%d*)")
+  if not found then return end
+  return tonumber(item_id), tonumber(enchant_id) or 0, tonumber(suffix_id) or 0,
+    tonumber(unique_id) or 0
+end
+
 local function matchItem(arg)
-	local itemName, itemLink = GetItemInfo(arg)
+  --[[
+    In the vanilla API, GetItemInfo() cannot parse item links or item names.
+    It can only parse item ids. It also does not return an item link as the 
+    second return value, it returns an item string instead, e.g. 
+    "item:6948:0:0:0"
+     and NOT "|cffffffff|Hitem:6948:0:0:0|h[Hearthstone]|h|r"
+     An item string parse function is used to replace an input item link or item
+     string into an item id, where available.
+  --]]
+  local itemId = parseItemString(arg)
+	local itemName, itemLink, rarity = GetItemInfo(itemId or arg)
 
 	if not itemName then
 		itemName = arg
 		itemLink = arg
+  else
+    --[[
+    -- This function return expects an item link where possible. So for vanilla, 
+    -- item string, color from rarity and item name are re-combined into an 
+    -- item link.
+    --]]
+    local ITEMLINK_FORMAT = "%s|H%s|h[%s]|h|r"
+    local color
+    _, _, _, color = GetItemQualityColor(rarity)
+    itemLink = string.format(ITEMLINK_FORMAT, color, itemLink, itemName)
 	end
 
 	return itemName, itemLink
@@ -83,7 +120,7 @@ local function deleteItems(test)
 
 				if itemName then
 					for i, item in ipairs(SimpleAutoDelete.list) do
-						if itemName == item then
+						if leq(itemName, item) then
 							local _, itemLink = matchItem(itemId)
 
 							if test then
@@ -142,7 +179,7 @@ local function addItem(arg)
 	local itemName, itemLink = matchItem(arg)
 
 	for _, item in ipairs(SimpleAutoDelete.list) do
-		if item == itemName then
+		if leq(item, itemName) then
 			print(itemLink .. " already exists in the list.")
 			return
 		end
@@ -156,7 +193,7 @@ local function removeItem(arg)
 	local itemName, itemLink = matchItem(arg)
 
 	for i, item in ipairs(SimpleAutoDelete.list) do
-		if item == itemName then
+		if leq(item, itemName) then
 			table.remove(SimpleAutoDelete.list, i)
 			print(itemLink .. " removed from the list.")
 			return

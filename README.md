@@ -4,11 +4,11 @@
 
 ## What is it
 
-SimpleAutoDelete is a lightweight and minimal list based addon for Wow TBC 2.4.3 to automatically delete unwanted items.
+SimpleAutoDelete is a lightweight and minimal list based addon for World of Warcraft (supported clients 1.12.1 and 2.4.3) to automatically delete unwanted items.
 
 ## How to install
 
-Go to Releases in https://github.com/nullfoxh/SimpleAutoDelete-TBC/releases and download SimpleAutoDelete.zip. Extract it to your World of Warcraft/Interface/AddOns folder and you're done!
+Go to Releases in https://github.com/fondlez/SimpleAutoDelete/releases and download SimpleAutoDelete.zip. Extract it to your World of Warcraft/Interface/AddOns folder and you're done!
 The final path should be World of Warcraft/Interface/AddOns/SimpleAutoDelete/SimpleAutoDelete.toc.
 
 ## How does it work

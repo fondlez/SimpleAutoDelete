@@ -1,8 +1,9 @@
-## Interface: 20400
+## Interface: 11200
 ## Title: |cffa0f6aaSimpleAutoDelete|r
-## Notes: github.com/nullfoxh/SimpleAutoDelete-TBC
-## Author: null
-## Version: 1.0
+## Notes: github.com/fondlez/SimpleAutoDelete
+## Author: null, fondlez
+## Version: 1.0-vanilla
 ## SavedVariablesPerCharacter: SimpleAutoDelete
+## DefaultState: enabled
 
 SimpleAutoDelete.lua
