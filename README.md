@@ -4,7 +4,7 @@
 
 ## What is it
 
-SimpleAutoDelete is a lightweight and minimal list based addon for World of Warcraft (supported clients 1.12.1 and 2.4.3) to automatically delete unwanted items.
+SimpleAutoDelete is a lightweight and minimal list based addon for World of Warcraft (tested clients 1.12.1, 2.4.3, 3.3.5a) to automatically delete unwanted items.
 
 ## How to install
 

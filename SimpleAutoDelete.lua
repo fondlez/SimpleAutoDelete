@@ -1,45 +1,45 @@
 --[[
 
-	SimpleAutoDelete
-		Automatically delete items specified in the list.
-		Will only trigger outside of combat
+  SimpleAutoDelete
+    Automatically delete items specified in the list.
+    Will only trigger outside of combat
 
-		Original addon by null
-		https://github.com/nullfoxh/SimpleAutoDelete-TBC
+    Original addon by null
+    https://github.com/nullfoxh/SimpleAutoDelete-TBC
     
     Modified for vanilla (1.12.1) by fondlez
     https://github.com/fondlez/SimpleAutoDelete
 
 ]]--
 
----------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 
 local GetContainerNumSlots, GetContainerNumFreeSlots, UnitAffectingCombat, GetItemInfo
-	= GetContainerNumSlots, GetContainerNumFreeSlots, UnitAffectingCombat, GetItemInfo
+  = GetContainerNumSlots, GetContainerNumFreeSlots, UnitAffectingCombat, GetItemInfo
 
 local print = function(msg)
-	DEFAULT_CHAT_FRAME:AddMessage("|cffa0f6aaSimpleAutoDelete|r: "..msg)
+  DEFAULT_CHAT_FRAME:AddMessage("|cffa0f6aaSimpleAutoDelete|r: "..msg)
 end
 
 local printv = function(msg)
-	if SimpleAutoDelete.verbose then print(msg) end
+  if SimpleAutoDelete.verbose then print(msg) end
 end
 
 SimpleAutoDelete = {
-	list = {},
-	verbose = true,
-	delay = 0.4
+  list = {},
+  verbose = true,
+  delay = 0.4
 }
 
----------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 local function getTableSize(t)
-	local count = 0
-	for _ in pairs(t) do
-		count = count + 1
-	end
-	return count
+  local count = 0
+  for _ in pairs(t) do
+    count = count + 1
+  end
+  return count
 end
 
 -- Utility function to lowercase compare strings for equality
@@ -56,6 +56,11 @@ local function parseItemString(target)
     tonumber(unique_id) or 0
 end
 
+-- Utility function to test if dealing with an item link
+local function isItemLink(target)
+  return not not strfind(target, "|c%x+|Hitem:.-|h%[.-%]|h|r")
+end
+
 local function matchItem(arg)
   --[[
     In the vanilla API, GetItemInfo() cannot parse item links or item names.
@@ -67,12 +72,12 @@ local function matchItem(arg)
      string into an item id, where available.
   --]]
   local itemId = parseItemString(arg)
-	local itemName, itemLink, rarity = GetItemInfo(itemId or arg)
+  local itemName, itemLink, rarity = GetItemInfo(itemId or arg)
 
-	if not itemName then
-		itemName = arg
-		itemLink = arg
-  else
+  if not itemName then
+    itemName = arg
+    itemLink = arg
+  elseif not isItemLink(itemLink) then
     --[[
     -- This function return expects an item link where possible. So for vanilla, 
     -- item string, color from rarity and item name are re-combined into an 
@@ -82,66 +87,66 @@ local function matchItem(arg)
     local color
     _, _, _, color = GetItemQualityColor(rarity)
     itemLink = string.format(ITEMLINK_FORMAT, color, itemLink, itemName)
-	end
+  end
 
-	return itemName, itemLink
+  return itemName, itemLink
 end
 
 local function getItemNameById(id)
-	local itemName = GetItemInfo(id)
-	return itemName
+  local itemName = GetItemInfo(id)
+  return itemName
 end
 
 -- This was implemented in wotlk or later
 local function GetContainerItemID(container, slot)
-	local itemLink = GetContainerItemLink(container, slot)
-	if itemLink then
-		local _, _, itemID = string.find(itemLink, "|Hitem:(%d+):")
-		if itemID then
-			return itemID
-		end
-	end
+  local itemLink = GetContainerItemLink(container, slot)
+  if itemLink then
+    local _, _, itemID = string.find(itemLink, "|Hitem:(%d+):")
+    if itemID then
+      return itemID
+    end
+  end
 end
 
----------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 local function deleteItems(test)
-	local numDeleted = 0
-	if test then
-		print("Running test, looking for items to delete.")
-	end
+  local numDeleted = 0
+  if test then
+    print("Running test, looking for items to delete.")
+  end
 
-	for bag = 0, NUM_BAG_SLOTS do
-		for slot = 1, GetContainerNumSlots(bag) do
-			local itemId = GetContainerItemID(bag, slot)
+  for bag = 0, NUM_BAG_SLOTS do
+    for slot = 1, GetContainerNumSlots(bag) do
+      local itemId = GetContainerItemID(bag, slot)
 
-			if itemId then
-				local itemName = getItemNameById(itemId)
+      if itemId then
+        local itemName = getItemNameById(itemId)
 
-				if itemName then
-					for i, item in ipairs(SimpleAutoDelete.list) do
-						if leq(itemName, item) then
-							local _, itemLink = matchItem(itemId)
+        if itemName then
+          for i, item in ipairs(SimpleAutoDelete.list) do
+            if leq(itemName, item) then
+              local _, itemLink = matchItem(itemId)
 
-							if test then
-								print("Found item that would be deleted ".. itemLink..".")
-							else
-								printv("Deleting item ".. itemLink..".")
-								PickupContainerItem(bag, slot)
-								DeleteCursorItem()
-							end
+              if test then
+                print("Found item that would be deleted ".. itemLink..".")
+              else
+                printv("Deleting item ".. itemLink..".")
+                PickupContainerItem(bag, slot)
+                DeleteCursorItem()
+              end
 
-							numDeleted = numDeleted + 1
-						end
-					end
-				end
-			end
-		end
-	end
+              numDeleted = numDeleted + 1
+            end
+          end
+        end
+      end
+    end
+  end
 
-	if test then
-		print("Found "..numDeleted.." items to delete.")
-	end
+  if test then
+    print("Found "..numDeleted.." items to delete.")
+  end
 end
 
 local throttle = 0
@@ -149,126 +154,126 @@ local f = CreateFrame("Frame")
 f:Hide()
 
 f:SetScript("OnEvent", function(self, event, ...)
-	if event == "LOOT_CLOSED" then
-		if not UnitAffectingCombat("player") then
-			f:Show()
-		else
-			f:RegisterEvent("PLAYER_REGEN_ENABLED")
-		end
-	elseif event == "PLAYER_REGEN_ENABLED" then
-		f:Show()
-		f:UnregisterEvent("PLAYER_REGEN_ENABLED")
-	end
+  if event == "LOOT_CLOSED" then
+    if not UnitAffectingCombat("player") then
+      f:Show()
+    else
+      f:RegisterEvent("PLAYER_REGEN_ENABLED")
+    end
+  elseif event == "PLAYER_REGEN_ENABLED" then
+    f:Show()
+    f:UnregisterEvent("PLAYER_REGEN_ENABLED")
+  end
 end)
 
 f:SetScript("OnUpdate", function(self, elapsed)
-	throttle = throttle + elapsed
+  throttle = throttle + elapsed
 
-	if throttle > SimpleAutoDelete.delay then
-		throttle = 0
-		deleteItems()
-		self:Hide()
-	end
+  if throttle > SimpleAutoDelete.delay then
+    throttle = 0
+    deleteItems()
+    self:Hide()
+  end
 end)
 
 f:RegisterEvent("LOOT_CLOSED")
 
----------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 local function addItem(arg)
-	local itemName, itemLink = matchItem(arg)
+  local itemName, itemLink = matchItem(arg)
 
-	for _, item in ipairs(SimpleAutoDelete.list) do
-		if leq(item, itemName) then
-			print(itemLink .. " already exists in the list.")
-			return
-		end
-	end
+  for _, item in ipairs(SimpleAutoDelete.list) do
+    if leq(item, itemName) then
+      print(itemLink .. " already exists in the list.")
+      return
+    end
+  end
 
-	print(itemLink .. " added to the list.")
-	table.insert(SimpleAutoDelete.list, itemName)
+  print(itemLink .. " added to the list.")
+  table.insert(SimpleAutoDelete.list, itemName)
 end
 
 local function removeItem(arg)
-	local itemName, itemLink = matchItem(arg)
+  local itemName, itemLink = matchItem(arg)
 
-	for i, item in ipairs(SimpleAutoDelete.list) do
-		if leq(item, itemName) then
-			table.remove(SimpleAutoDelete.list, i)
-			print(itemLink .. " removed from the list.")
-			return
-		end
-	end
+  for i, item in ipairs(SimpleAutoDelete.list) do
+    if leq(item, itemName) then
+      table.remove(SimpleAutoDelete.list, i)
+      print(itemLink .. " removed from the list.")
+      return
+    end
+  end
 
-	print(itemLink .. " was not found in the list.")
+  print(itemLink .. " was not found in the list.")
 end
 
 local function viewItems()
-	if getTableSize(SimpleAutoDelete.list) == 0 then
-		print("The list of items to be deleted is currently empty.")
-		return
-	end
+  if getTableSize(SimpleAutoDelete.list) == 0 then
+    print("The list of items to be deleted is currently empty.")
+    return
+  end
 
-	print("Items in list:")
-	for _, item in ipairs(SimpleAutoDelete.list) do
-		local itemName, itemLink = matchItem(item)
-		print("  " .. itemLink)
-	end
+  print("Items in list:")
+  for _, item in ipairs(SimpleAutoDelete.list) do
+    local itemName, itemLink = matchItem(item)
+    print("  " .. itemLink)
+  end
 end
 
 local function setDelay(arg)
-	local num = tonumber(arg)
+  local num = tonumber(arg)
 
-	if num then
-		SimpleAutoDelete.delay = num
-		print("Delay set to " .. SimpleAutoDelete.delay .. " seconds.")
-	else
-		print("Invalid argument for delay. Please specify a number in seconds. Delay is currently set to ".. SimpleAutoDelete.delay .. " seconds.")
-	end
+  if num then
+    SimpleAutoDelete.delay = num
+    print("Delay set to " .. SimpleAutoDelete.delay .. " seconds.")
+  else
+    print("Invalid argument for delay. Please specify a number in seconds. Delay is currently set to ".. SimpleAutoDelete.delay .. " seconds.")
+  end
 end
 
 local function setPrint(arg)
-	if arg == "true" then
-		SimpleAutoDelete.print = true
-	elseif arg == "false" then
-		SimpleAutoDelete.print = false
-	else
-		SimpleAutoDelete.print = not SimpleAutoDelete.print
-	end
+  if arg == "true" then
+    SimpleAutoDelete.print = true
+  elseif arg == "false" then
+    SimpleAutoDelete.print = false
+  else
+    SimpleAutoDelete.print = not SimpleAutoDelete.print
+  end
 
-	if SimpleAutoDelete.print then
-		print("Printing enabled.")
-	else
-		print("Printing disabled.")
-	end
+  if SimpleAutoDelete.print then
+    print("Printing enabled.")
+  else
+    print("Printing disabled.")
+  end
 end
 
 SLASH_SIMPLEAUTODELETE1 = "/simpleautodelete"
 SLASH_SIMPLEAUTODELETE2 = "/sad"
 SlashCmdList["SIMPLEAUTODELETE"] = function(cmd)
-	local _, _, cmd, arg = string.find(cmd, "%s?(%w+)%s?(.*)")
-	if cmd == "add" then
-		addItem(arg)
-	elseif cmd == "remove" then
-		removeItem(arg)
-	elseif cmd == "list" then
-		viewItems()
-	elseif cmd == "delay" then
-		setDelay(arg)
-	elseif cmd == "print" then
-		setPrint(arg)
-	elseif cmd == "test" then
-		deleteItems(true)
-	elseif cmd == "run" then
-		deleteItems()
-	else
-		print("Unrecognized command. The available are commands:")
-		print("/sad add <item name or link> - Adds an item to the list")
-		print("/sad remove <item name or link> - Removes an item from the list")
-		print("/sad list - Lists all items in the list")
-		print("/sad delay <seconds> - Sets the delay time in seconds for deletion")
-		print("/sad print <true/false> - Toggles printing of items being deleted")
-		print("/sad test - Lists all items in your bags that would be deleted")
-		print("/sad run - Scan your bags now and look for items to delete")
-	end
+  local _, _, cmd, arg = string.find(cmd, "%s?(%w+)%s?(.*)")
+  if cmd == "add" then
+    addItem(arg)
+  elseif cmd == "remove" then
+    removeItem(arg)
+  elseif cmd == "list" then
+    viewItems()
+  elseif cmd == "delay" then
+    setDelay(arg)
+  elseif cmd == "print" then
+    setPrint(arg)
+  elseif cmd == "test" then
+    deleteItems(true)
+  elseif cmd == "run" then
+    deleteItems()
+  else
+    print("Unrecognized command. The available are commands:")
+    print("/sad add <item name or link> - Adds an item to the list")
+    print("/sad remove <item name or link> - Removes an item from the list")
+    print("/sad list - Lists all items in the list")
+    print("/sad delay <seconds> - Sets the delay time in seconds for deletion")
+    print("/sad print <true/false> - Toggles printing of items being deleted")
+    print("/sad test - Lists all items in your bags that would be deleted")
+    print("/sad run - Scan your bags now and look for items to delete")
+  end
 end

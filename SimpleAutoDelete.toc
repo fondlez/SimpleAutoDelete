@@ -1,8 +1,8 @@
-## Interface: 11200
+## Interface: 30300
 ## Title: |cffa0f6aaSimpleAutoDelete|r
 ## Notes: github.com/fondlez/SimpleAutoDelete
 ## Author: null, fondlez
-## Version: 1.0-vanilla
+## Version: 1.1-fondlez
 ## SavedVariablesPerCharacter: SimpleAutoDelete
 ## DefaultState: enabled
 
