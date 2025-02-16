@@ -180,7 +180,17 @@ f:RegisterEvent("LOOT_CLOSED")
 
 --------------------------------------------------------------------------------
 
+local strtrim = strtrim or function(str)
+  return str and gsub(str, "^%s*(.-)%s*$", "%1")
+end
+
+local function isEmpty(arg)
+  return not arg or strtrim(arg) == ""
+end
+
 local function addItem(arg)
+  if isEmpty(arg) then return end
+  
   local itemName, itemLink = matchItem(arg)
 
   for _, item in ipairs(SimpleAutoDelete.list) do
@@ -195,6 +205,8 @@ local function addItem(arg)
 end
 
 local function removeItem(arg)
+  if isEmpty(arg) then return end
+  
   local itemName, itemLink = matchItem(arg)
 
   for i, item in ipairs(SimpleAutoDelete.list) do

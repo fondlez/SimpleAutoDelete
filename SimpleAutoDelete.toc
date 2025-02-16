@@ -2,7 +2,7 @@
 ## Title: |cffa0f6aaSimpleAutoDelete|r
 ## Notes: github.com/fondlez/SimpleAutoDelete
 ## Author: null, fondlez
-## Version: 1.1-fondlez
+## Version: 1.2-fondlez
 ## SavedVariablesPerCharacter: SimpleAutoDelete
 ## DefaultState: enabled
 
